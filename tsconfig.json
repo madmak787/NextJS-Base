@@ -1,12 +1,16 @@
 {
   "compilerOptions": {
-    "allowJs": false,            // ❌ must be false
-    "checkJs": false,            // ❌ must be false
-    "jsx": "react-jsx",          // ✅ use new JSX transform
+    "allowJs": false, // ❌ must be false
+    "checkJs": false, // ❌ must be false
+    "jsx": "preserve", // ✅ use new JSX transform
     "moduleResolution": "bundler",
     "strict": true,
     "target": "ESNext",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "module": "esnext",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -15,10 +19,25 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     },
-    "plugins": [{ "name": "next" }]
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "skipLibCheck": true,
+    "noEmit": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
