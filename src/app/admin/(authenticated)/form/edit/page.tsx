@@ -7,7 +7,7 @@ import { uuid } from "@/lib/utils";
 
 function EditDataInner() {
   const sp = useSearchParams();
-  const id = sp.get("hid") ?? undefined; // pass undefined if missing
+  const id = sp.get("id") ?? undefined; // pass undefined if missing
 
   return <DataForm key={uuid()} mode="edit" id={id} pageName="Edit Data" />;
 }

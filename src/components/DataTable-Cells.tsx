@@ -44,7 +44,8 @@ export const DataTableCells: React.FC<DataTableCellsProps> = ({
       break;
 
     case col.key === "phone" && value !== null:
-      content = value?.code + " " + value?.number;
+      // content = value?.code + " " + value?.number;
+      content = value;
       break;
 
     case col.key === "due_date" && value !== null:

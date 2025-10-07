@@ -10,9 +10,9 @@ export default function Page() {
   return (
     <>
       <Title title="All Data" />
-      <div className="flex justify-between items-center my-6">
+      <div className="flex justify-between items-center">
         <span className="text-[#4A5567]">View and manage data</span>
-        <Link href="/create">
+        <Link href="/admin/form/create">
           <Button>
             <Plus /> Add New
           </Button>

@@ -37,7 +37,8 @@ export const actionColumn = (
         icon: Eye,
         label: "View",
         // onClick: () => router.push(`${endpoint}/${row.id}`),
-        onClick: () => router.push(`${endpoint}/view?hid=${row.hid}`),
+        onClick: () =>
+          router.push(`${endpoint}/admin/form/view?hid=${row.hid}`),
       },
       {
         name: "edit" as Action,
@@ -47,7 +48,7 @@ export const actionColumn = (
           // setEdited(row.id);
           setEdit(row);
           // router.push(`${endpoint}/edit?id=${row.id}`);
-          router.push(`${route ?? endpoint}/edit?hid=${row.hid}`);
+          router.push(`${route ?? endpoint}/admin/form/edit?id=${row.id}`);
         },
       },
       {

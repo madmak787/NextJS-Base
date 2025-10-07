@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 import React from "react";
 import { Title } from "@/components/title";
@@ -7,7 +6,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,7 +21,6 @@ import { useRouter } from "next/navigation";
 import { EditFormType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { RequiredLabel } from "@/components/required-label";
-import { Textarea } from "@/components/ui/textarea";
 
 export default function DataForm({
   mode,
@@ -35,64 +32,36 @@ export default function DataForm({
   const [disabled, setDisabled] = useState(false);
 
   useEffect(() => {
+    console.log(mode, id);
     if (mode === "edit" && id) {
       (async () => {
         setLoader(true);
-        const response = await api(`/customers/${id}`, {}, "GET");
+        const response = await api(`/admin/data/${id}`, {}, "GET");
         setLoader(false);
         if (response?.success) {
-          const customer = response.data;
-          setEdit(customer);
+          const data = response.data;
+          setEdit(data);
           form.reset({
-            ...customer,
-            ...(customer && "shipping" in customer
-              ? (customer.shipping as object)
-              : {}),
-            ...(customer && "billing" in customer
-              ? (customer.billing as object)
-              : {}),
+            ...data,
           });
         } else {
-          showError(response?.message ?? "Failed to load customer.");
+          showError(response?.message ?? "Failed to load data.");
         }
       })();
     } else {
       resetPseudo();
       form.reset();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, id]);
 
   const FormSchema = z.object({
     name: z
       .string({
-        message: "Customer Name is required",
+        message: "Name is required",
       })
-      .min(3, { message: "Customer Name must be at least 3 characters long" }),
-    first_name: z
-      .string({
-        error: "First Name is required",
-      })
-      .min(3, { message: "First Name must be at least 3 characters long" }),
-    last_name: z
-      .string({
-        error: "Last Name is required",
-      })
-      .min(3, { message: "Last Name must be at least 3 characters long" }),
+      .min(3, { message: "Name must be at least 3 characters long" }),
     email: z.string({ error: "Email is required" }),
-    phone: z.object({
-      code: z.string({ error: "Country code is required" }),
-      number: z
-        .string({ error: "Phone number is required" })
-        .min(5, { message: "Phone number is too short" }),
-    }),
-    account_number: z
-      .string({ error: "Account number is required" })
-      .min(3, { message: "Account number must be at least 3 characters long" }),
-    website: z.string().nullable().optional(),
-    phone_code: z.string().nullable().optional(),
-    phone_number: z.string().nullable().optional(),
-    notes: z.string().nullable().optional(),
+    phone: z.string({ error: "Phone number is required" }),
   });
 
   type ShippingAddressType = z.infer<typeof FormSchema>;
@@ -101,18 +70,8 @@ export default function DataForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       name: "",
-      first_name: "",
-      last_name: "",
       email: "",
-      phone: {
-        code: "",
-        number: "",
-      },
-      account_number: "",
-      website: "",
-      phone_code: "",
-      phone_number: "",
-      notes: "",
+      phone: "",
       ...(mode === "edit" ? edit_data : {}),
     },
   });
@@ -121,20 +80,23 @@ export default function DataForm({
     setLoader(true);
     const payload = {
       ...data,
-      phone_code: data.phone.code,
-      phone_number: data.phone.number,
     };
     let result;
     if (edit_data && "id" in edit_data) {
-      result = await api(`/customers/${(edit_data as any).id}`, payload, "PUT");
+      result = await api(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        `/admin/data/${(edit_data as any).id}`,
+        payload,
+        "PUT"
+      );
     } else {
-      result = await api("/customers", payload);
+      result = await api("/admin/data", payload);
     }
     setLoader(false);
     if (result.success) {
       setDisabled(true);
       toast.info(result.message);
-      router.push("/customers");
+      router.push("/admin/table");
     } else {
       showError(result.message);
     }
@@ -144,7 +106,7 @@ export default function DataForm({
     <>
       <Title
         title={pageName}
-        subtitle={[{ name: "All Customers", link: "/customers" }]}
+        subtitle={[{ name: "All Data", link: "/admin/table" }]}
       />
       <div className="grid grid-cols-1 gap-6">
         <Form {...form}>
@@ -158,11 +120,11 @@ export default function DataForm({
                 name="name"
                 render={({ field }) => (
                   <FormItem className="flex flex-col w-1/2 px-2">
-                    <RequiredLabel>Customer Name</RequiredLabel>
+                    <RequiredLabel>Name</RequiredLabel>
                     <FormControl>
                       <Input
                         className="shadow-gray-300 border-gray-300"
-                        placeholder="Enter the Business Name"
+                        placeholder="Enter the Name"
                         disabled={disabled}
                         {...field}
                       />
@@ -171,42 +133,6 @@ export default function DataForm({
                   </FormItem>
                 )}
               />
-              <div className="flex">
-                <FormField
-                  control={form.control}
-                  name="first_name"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col w-1/2 px-2">
-                      <RequiredLabel>First Name</RequiredLabel>
-                      <FormControl>
-                        <Input
-                          className="shadow-gray-300 border-gray-300"
-                          placeholder="Enter the Business Name"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="" />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="last_name"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col w-1/2 px-2">
-                      <RequiredLabel>Last Name</RequiredLabel>
-                      <FormControl>
-                        <Input
-                          className="shadow-gray-300 border-gray-300"
-                          placeholder="Enter the Business Name"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="" />
-                    </FormItem>
-                  )}
-                />
-              </div>
               <div className="flex">
                 <FormField
                   control={form.control}
@@ -225,67 +151,17 @@ export default function DataForm({
                     </FormItem>
                   )}
                 />
-              </div>
-              <div className="flex">
                 <FormField
                   control={form.control}
-                  name="account_number"
+                  name="phone"
                   render={({ field }) => (
                     <FormItem className="flex flex-col w-1/2 px-2">
-                      <RequiredLabel>Account Number</RequiredLabel>
+                      <RequiredLabel>Phone</RequiredLabel>
                       <FormControl>
                         <Input
                           className="shadow-gray-300 border-gray-300"
-                          placeholder="Enter Account Number"
+                          placeholder="Enter Phone Number"
                           {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="" />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="website"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col w-1/2 px-2">
-                      <FormLabel
-                        htmlFor="website"
-                        className="flex flex-col items-start gap-0 font-semibold text-base"
-                      >
-                        Website
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="shadow-gray-300 border-gray-300"
-                          placeholder="Enter Website"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage className="" />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex">
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col w-1/2 px-2">
-                      <FormLabel
-                        htmlFor="website"
-                        className="flex flex-col items-start gap-0 font-semibold text-base"
-                      >
-                        Notes
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          className="shadow-gray-300 border-gray-300"
-                          placeholder="Write notes if any ..."
-                          {...field}
-                          value={field.value ?? ""}
                         />
                       </FormControl>
                       <FormMessage className="" />
@@ -307,7 +183,7 @@ export default function DataForm({
                 </Button>
                 <Button
                   disabled={loader}
-                  onClick={() => router.push("/customers")}
+                  onClick={() => router.push("/admin/table")}
                   variant="outline"
                   type="button"
                 >
