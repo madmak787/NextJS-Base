@@ -9,15 +9,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-const medias = ["media", "attachment", "pdf"];
+const medias = ["media", "attachment", "pdf", "file", "image", "logo", "banner"];
 
 export async function api(
 	endpoint: string,
-	data: Record<string, any> = {},
+	data: Record<string, any> | FormData = {},
 	method: Method = "POST"
 ) {
 	const token =
-		JSON.parse(localStorage.getItem("arc-auth") || "{}")?.state?.token;
+		JSON.parse(localStorage.getItem("admin-auth") || "{}")?.state?.token;
 
 	const url = `${process.env.NEXT_PUBLIC_API_URL}${endpoint}`;
 	let body: any = data;
@@ -37,40 +37,47 @@ export async function api(
 		headers,
 	};
 
-	// Handle GET requests with query params
+	// ✅ 1. Handle GET requests with query params
 	if (method.toUpperCase() === "GET" && Object.keys(data).length > 0) {
 		config.params = data;
 		body = undefined;
-	} else if (method !== "GET" && method !== "HEAD") {
-		const formData = new FormData();
+	}
 
-		// Laravel needs POST + _method spoofing for PUT/PATCH
-		if (method === "PUT" || method === "PATCH") {
-			formData.append("_method", method);
-			method = "POST";
-			config.method = "POST"; // make sure Axios actually sends POST
-		}
+	// ✅ 2. Handle non-GET requests
+	else if (method !== "GET" && method !== "HEAD") {
+		// ✅ Detect if data is already a FormData
+		if (data instanceof FormData) {
+			body = data;
+			delete config.headers?.["Content-Type"]; // let Axios handle it
+		} else {
+			// Otherwise build FormData manually (existing feature)
+			const formData = new FormData();
 
-		// Append all fields
-		for (const key in data) {
-			if (!Object.prototype.hasOwnProperty.call(data, key)) continue;
-			const value = data[key];
-			if (value === null || value === undefined) continue;
-
-			if (medias.includes(key) || value instanceof File) {
-				formData.append(key, value);
-			} else if (typeof value === "object" && !(value instanceof Blob)) {
-				formData.append(key, JSON.stringify(value));
-			} else {
-				formData.append(key, String(value));
+			// Laravel needs POST + _method spoofing for PUT/PATCH
+			if (method === "PUT" || method === "PATCH") {
+				formData.append("_method", method);
+				method = "POST";
+				config.method = "POST";
 			}
+
+			// Append all fields
+			for (const key in data) {
+				if (!Object.prototype.hasOwnProperty.call(data, key)) continue;
+				const value = (data as any)[key];
+				if (value === null || value === undefined) continue;
+
+				if (medias.includes(key) || value instanceof File) {
+					formData.append(key, value);
+				} else if (typeof value === "object" && !(value instanceof Blob)) {
+					formData.append(key, JSON.stringify(value));
+				} else {
+					formData.append(key, String(value));
+				}
+			}
+
+			body = formData;
+			delete config.headers?.["Content-Type"];
 		}
-
-		body = formData;
-
-		// ❌ Don't manually set Content-Type here
-		// Axios will handle multipart boundaries automatically
-		delete config.headers?.["Content-Type"];
 	}
 
 	config.data = body;
@@ -79,11 +86,37 @@ export async function api(
 		const response = await axios(config);
 		return response.data;
 	} catch (error: any) {
+		// ✅ Retain your existing 401 revalidation + redirect logic
 		if (error.response?.status === 401) {
-			localStorage.removeItem("arc-auth");
-			window.location.href = "/sign-in";
-			return { success: false, message: error.response?.data?.message };
+			try {
+				const isAuthCheck =
+					endpoint.startsWith("/admin/profile") ||
+					endpoint.startsWith("/admin/login");
+				if (!isAuthCheck) {
+					await axios({
+						url: `${process.env.NEXT_PUBLIC_API_URL}/admin/profile`,
+						method: "GET",
+						headers: {
+							Accept: "application/json",
+							Authorization: headers["Authorization"]!,
+						},
+					});
+					throw error;
+				}
+			} catch {
+				localStorage.removeItem("admin-auth");
+				if (typeof window !== "undefined")
+					window.location.href = "/admin/sign-in";
+				return {
+					success: false,
+					message:
+						error.response?.data?.message ?? "Unauthenticated",
+				};
+			}
+
+			throw error;
 		}
+
 		throw error;
 	}
 }

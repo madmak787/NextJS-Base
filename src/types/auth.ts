@@ -3,6 +3,7 @@ export type User = {
 	email: string;
 	name?: string;
 	avatar?: string;
+	phone?: string;
 	status?: number;
 	role_id?: number;
 };
@@ -91,7 +92,7 @@ export type UserInfoType = {
 };
 
 export type AuthState = {
-	token: string | null;
+	token: string;
 	user: User | null;
 	isLoggedIn: boolean;
 

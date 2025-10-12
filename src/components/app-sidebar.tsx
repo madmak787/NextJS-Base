@@ -52,20 +52,12 @@ const data = {
       icon: Settings2,
       items: [
         {
-          title: "General",
-          url: "#",
+          title: "My Profile",
+          url: "/admin/profile",
         },
         {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
+          title: "Configurations",
+          url: "/admin/settings",
         },
       ],
     },

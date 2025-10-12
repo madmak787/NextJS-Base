@@ -2,6 +2,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import React from "react";
+import { SettingsProvider } from "@/providers/settings-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,8 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} antialiased`}>
-        {children}
-        <Toaster position="top-center" />
+        {/* ✅ Wrap your app in a client-side provider */}
+        <SettingsProvider>
+          {children}
+          <Toaster position="top-center" />
+        </SettingsProvider>
       </body>
     </html>
   );

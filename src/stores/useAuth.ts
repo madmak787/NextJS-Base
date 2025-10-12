@@ -5,7 +5,7 @@ import type { AuthState } from '@/types';
 const useAuth = create<AuthState>()(
 	persist(
 		(set) => ({
-			token: null,
+			token: "",
 			user: null,
 			isLoggedIn: false,
 
@@ -19,7 +19,7 @@ const useAuth = create<AuthState>()(
 			logout: () =>
 				set({}),
 		}),
-		{ name: 'giftcard-auth' }
+		{ name: 'admin-auth' }
 	)
 );
 

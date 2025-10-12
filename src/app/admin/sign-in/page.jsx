@@ -1,7 +1,7 @@
 'use client'
 import React from "react";
-import { LoginForm } from "@/components/login-form"
 import Image from "next/image";
+import LoginForm from "./components/login-form";
 
 export default function Page() {
   return (

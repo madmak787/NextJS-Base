@@ -27,7 +27,7 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 // 🧩 Step 2 — Component
-export function LoginForm({
+export default function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -48,8 +48,7 @@ export function LoginForm({
       setErrorMsg(null);
 
       const res = await api("/admin/login", values, "POST");
-
-      if (res?.status === true && res?.data?.token) {
+      if (res?.success === true && res?.data?.token) {
         setUser({
           token: res.data.token,
           user: res.data.admin,
